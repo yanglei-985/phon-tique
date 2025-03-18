@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>法语语音规则图谱</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .phonetic-card:hover .phonetic-symbol {
+            transform: scale(1.1);
+            transition: transform 0.3s ease;
+        }
+        .example-word {
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        .phonetic-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <!-- 搜索框 -->
+        <div class="mb-8">
+            <input type="text" id="searchInput" 
+                   placeholder="搜索音标、字母组合或例词..." 
+                   class="w-full p-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+        </div>
+
+        <!-- 音标列表 -->
+        <div id="phoneticsList" class="phonetic-list">
+            <!-- 列表项通过JavaScript动态生成 -->
+        </div>
+
+        <!-- 详细信息面板 -->
+        <div id="detailPanel" class="bg-white rounded-xl p-6 shadow-lg hidden">
+            <div class="mb-6">
+                <h2 id="phoneticSymbol" class="text-4xl font-bold text-blue-600 mb-2"></h2>
+                <p id="phoneticDesc" class="text-gray-600"></p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-xl font-semibold mb-4 text-gray-700">字母组合</h3>
+                    <ul id="letterCombinations" class="space-y-2">
+                        <!-- 字母组合项动态生成 -->
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-semibold mb-4 text-gray-700">例词示例</h3>
+                    <ul id="wordExamples" class="space-y-2">
+                        <!-- 例词项动态生成 -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 原始数据
+        const phoneticData = [
+            
+        {
+                symbol: "[ε]",
+                letters: ["ai", "aî", "e", "ë", "ê", "è", "-et", "est", "ei"],
+                examples: ["fait", "maître", "mettre", "Noël", "pêle-mêle", "mètre", "poulet", "il est", "enseigner"],
+                desc: "闭前圆唇元音 / 同音"
+            },
+            {
+                symbol: "[ɑ̃]",
+                letters: ["an", "am", "aon", "em", "en"],
+                examples: ["sans", "ampère", "paon", "empereur", "gendre"],
+                desc: "开后不圆唇元音 / 鼻音。发音部位与［a］相近，但舌略向后缩，开口度稍大，气流从口腔和鼻腔冲出，形成鼻音。［a］与汉语拼音相似，舌位靠前，嘴自然张开，口型略紧张。"
+            },
+            
+            {
+                symbol: "[b]",
+                letters: ["b"],
+                examples: ["bout"],
+                desc: "浊音"
+            },
+           
+            {
+                symbol: "[k]",
+                letters: ["c", , "cc", "ch", "k", "q", "qu"],
+                examples: ["cou", "sac", "accord", "technique", "kaki", "coq", "quel"],
+                desc: "清音"
+            },
+           
+            {
+                symbol: "[∫]",
+                letters: ["ch", "sch", "sh"],
+                examples: ["chou", "schéma", "short"],
+                desc: "清音"
+            },
+            {
+                symbol: "[d]",
+                letters: ["d"],
+                examples: ["doux"],
+                desc: "浊音"
+            },
+            {
+                symbol: "silent",
+                letters: ["e"],
+                examples: ["不发音 larme", "samedi", "Jean"],
+                desc: "不发音字母"
+            },
+            {
+                symbol: "[e]",
+                letters: ["é", "es", "er", "ez", "et"],
+                examples: ["blé", "des", "février", "parlez", "et"],
+                desc: "闭前不圆唇元音"
+            },
+           
+           
+            {
+                symbol: "[ø]",
+                letters: ["eu", "œu"],
+                examples: ["peu", "deux", "tondeuse", "vœu"],
+                desc: "闭后圆唇元音"
+            },
+            
+            {
+                symbol: "[f]",
+                letters: ["f"],
+                examples: ["fou"],
+                desc: "清音"
+            },
+            {
+                symbol: "[g]",
+                letters: ["c", "g", "gu"],
+                examples: ["second","garder goût", "guerre"],
+                desc: "浊音"
+            },
+            {
+                symbol: "[ʒ]",
+                letters: ["j", "g"],
+                examples: ["joue", "gêne"],
+                desc: "齿龈后音——舌尖拾向上齿龈稍后的部分，与上腭之间形成缝隙，双唇略向前突出，气流通过时形成摩擦，声带要振动。",
+            },
+            {
+                symbol: "[gw]",
+                letters: ["g"],
+                examples: ["Guadeloupe"],
+                desc: "浊音"
+            },
+            {
+                symbol: "h aspiré",
+                letters: ["h"],
+                examples: ["les haricots"],
+                desc: "不发音"
+            },
+            {
+                symbol: "h muet",
+                letters: ["h"],
+                examples: ["les hommes"],
+                desc: "不发音"
+            },
+            
+            {
+                symbol: "[j]",
+                letters: ["il", "i", "y", "ill"],
+                examples: ["sommeil", "miel", "yaourt", "conseille"],
+                desc: "半元音 / 清音"
+            },
+            {
+                symbol: "[ij]",
+                letters: ["ill"],
+                examples: ["billet"],
+                desc: "半元音"
+            },
+            {
+                symbol: "[ɛ̃]",
+                letters: ["in", "im", "en", "aim", "ain", "ein"],
+                examples: ["vin", "timbre", "examen", "daim", "pain", "incertain", "plein"],
+                desc: "闭前圆唇元音 / 同音"
+            },
+            
+            
+            {
+                symbol: "[l]",
+                letters: ["l"],
+                examples: ["loup"],
+                desc: "清音"
+            },
+            {
+                symbol: "[m]",
+                letters: ["m"],
+                examples: ["mal"],
+                desc: "清音"
+            },
+            {
+                symbol: "[n]",
+                letters: ["n"],
+                examples: ["nous", "automne"],
+                desc: "清音"
+            },
+            {
+                symbol: "[o]",
+                letters: ["O", "Ô", "au"],
+                examples: ["rose", "hôte", "saut"],
+                desc: "闭后圆唇元音"
+            },
+            {
+                symbol: "[ɔ]",
+                letters: ["o", "oi", "au"],
+                examples: ["botte", "oignon", "laure"],
+                desc: "闭后圆唇元音"
+            },
+            {
+                symbol: "[wa]",
+                letters: ["oi"],
+                examples: ["noix"],
+                desc: "双元音"
+            },
+            
+            {
+                symbol: "[wɛ̃]",
+                letters: ["oin"],
+                examples: ["soin"],
+                desc: "双元音"
+            },
+            {
+                symbol: "[ɔ̃]",
+                letters: ["om", "on"],
+                examples: ["nom", "son"],
+                desc: "鼻音"
+            },
+            {
+                symbol: "[u]",
+                letters: ["ou"],
+                examples: ["mou"],
+                desc: "双元音"
+            },
+            {
+                symbol: "[w]",
+                letters: ["w", "ou"],
+                examples: ["oui", "oui"],
+                desc: "半元音"
+            },
+            {
+                symbol: "[p]",
+                letters: ["P"],
+                examples: ["pou"],
+                desc: "清音"
+            },
+            {
+                symbol: "[f]",
+                letters: ["Ph"],
+                examples: ["photographie"],
+                desc: "清音"
+            },
+            
+            {
+                symbol: "[kw]",
+                letters: ["qu"],
+                examples: ["équation"],
+                desc: "清音"
+            },
+            {
+                symbol: "[r]",
+                letters: ["r"],
+                examples: ["reine"],
+                desc: "浊音"
+            },
+            {
+                symbol: "[s]",
+                letters: ["s", "SS", "SC", "X", "c", "ç"],
+                examples: ["saut", "poisson", "scie", "dix", "ici", "Ça"],
+                desc: "清音"
+            },
+            {
+                symbol: "[z]",
+                letters: ["s", "Z"],
+                examples: ["poison", "zigzag"],
+                desc: "浊音"
+            },
+            
+            {
+                symbol: "[sk]",
+                letters: ["s"],
+                examples: ["escalade"],
+                desc: "清音"
+            },
+            {
+                symbol: "[t]",
+                letters: ["t", "th"],
+                examples: ["tout", "théorie"],
+                desc: "清音"
+            },
+            {
+                symbol: "[si]",
+                letters: ["ti"],
+                examples: ["diplomatie"],
+                desc: "清音"
+            },
+            {
+                symbol: "[sj]",
+                letters: ["ti"],
+                examples: ["observation"],
+                desc: "清音"
+            },
+            {
+                symbol: "[y]",
+                letters: ["u"],
+                examples: ["lu"],
+                desc: "闭前不圆唇元音"
+            },
+            {
+                symbol: "[ɥ]",
+                letters: ["u"],
+                examples: ["nuit"],
+                desc: "清音"
+            },
+            {
+                symbol: "[œ]",
+                letters: ["(c / g) + ue + (il)",  "eu", "œu", "œ"],
+                examples: ["accueil", "orgueil",, "peur", "neuf", "œuf", "œil"],
+                desc: "双元音 / 闭前圆唇元音"
+            },
+            {
+                symbol: "[œ̃]",
+                letters: ["um", "un"],
+                examples: ["parfum", "un"],
+                desc: "双元音"
+            },
+            {
+                symbol: "[ɔm]",
+                letters: ["um"],
+                examples: ["maximum"],
+                desc: "清音"
+            },
+            {
+                symbol: "[v]",
+                letters: ["V", "w"],
+                examples: ["vous", "wagon", "tramway"],
+                desc: "浊音"
+            },
+            
+            {
+                symbol: "[ks]",
+                letters: ["X", "cc"],
+                examples: ["Alexandre", "accélérer"],
+                desc: "清音"
+            },
+            {
+                symbol: "[gz]",
+                letters: ["X"],
+                examples: ["xénophobe", "existence"],
+                desc: "浊音"
+            },
+            {
+                symbol: "[i]",
+                letters: ["y", "i"],
+                examples: ["lyrique","lit", "signifie"],
+                desc: "闭前不圆唇元音 / 双元音"
+            },
+            
+            {
+                symbol: "silent",
+                letters: ["e", "-t"],
+                examples: ["larme", "poulet"],
+                desc: "不发音字母"
+            },
+            {
+                symbol: "[a]",
+                letters: ["a", "â", "à"],
+                examples: ["tache", "tâche", "là"],
+                desc: "［a］与汉语拼音相似，舌位靠前，嘴自然张开，口型略紧张。"
+            },
+           
+        ];
+
+        // 初始化
+        function init() {
+            renderPhoneticsList(phoneticData);
+            setupSearch();
+        }
+
+        // 渲染音标列表
+        function renderPhoneticsList(data) {
+            const container = document.getElementById('phoneticsList');
+            container.innerHTML = data.map(item => `
+                <div class="phonetic-card bg-white p-4 rounded-lg cursor-pointer shadow-md hover:shadow-lg transition-all"
+                     onclick="showDetail('${item.symbol}')">
+                    <div class="phonetic-symbol text-2xl font-bold text-blue-600 mb-2">
+                        ${item.symbol}
+                    </div>
+                    <div class="text-gray-600 text-sm">
+                        ${item.letters.slice(0,3).join(', ')}...
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 显示详细信息
+        function showDetail(symbol) {
+            const data = phoneticData.find(item => item.symbol === symbol);
+            const panel = document.getElementById('detailPanel');
+            
+            document.getElementById('phoneticSymbol').textContent = data.symbol;
+            document.getElementById('phoneticDesc').textContent = data.desc;
+            
+            // 渲染字母组合
+            document.getElementById('letterCombinations').innerHTML = data.letters
+                .map(letter => `
+                    <li class="bg-gray-50 p-3 rounded-lg">
+                        <span class="font-mono text-lg">${letter}</span>
+                    </li>
+                `).join('');
+
+            // 渲染例词
+            document.getElementById('wordExamples').innerHTML = data.examples
+                .map(word => `
+                    <li class="bg-blue-50 p-3 rounded-lg example-word">
+                        <span class="text-blue-600 font-medium">${word}</span>
+                    </li>
+                `).join('');
+
+            panel.classList.remove('hidden');
+        }
+
+        // 搜索功能
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase();
+                const filtered = phoneticData.filter(item => 
+                    item.symbol.toLowerCase().includes(term) ||
+                    item.letters.some(l => l.toLowerCase().includes(term)) ||
+                    item.examples.some(e => e.toLowerCase().includes(term))
+                );
+                renderPhoneticsList(filtered);
+            });
+        }
+
+        // 初始化应用
+        init();
+    </script>
+</body>
+</html>
